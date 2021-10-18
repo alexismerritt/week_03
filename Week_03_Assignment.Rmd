@@ -23,6 +23,16 @@ vehicles <- read_csv(here::here("Data", "vehicles.csv"),
 
 Describe what is happening in the `col_types` parameter. Why do you think this is necessary?
 
+```{r}
+vehicles
+```
+
+
+Cols looks at each of the columns in the input data, the ".default = 'c'" portion is saying that all of the columns should be read as character types. This may be necessary if you are trying to maintain the integrity of all of the values in the dataset and are trying to prevent the data from being manipulated (i.e running the numeric values through calculations.) Or maybe it's for data uniformity.
+
+
+
+
 2. Create a reduced version of the dataset that includes the following fields:
 
 -   `make`
@@ -42,8 +52,22 @@ Ensure that the `year`, fuelCost08`, `highway08`, `city08`, and `feScore` fields
 Assign this to a new dataframe called `vehicles_sub`.
 
 ```{r}
-
+vehicles_sub_temp <-  #temporary dataframe before mutation
+  select(vehicles,
+         make, model, year, cylinders, drive, trany, evMotor, fuelCost08, highway08, city08, feScore)
 ```
+
+```{r}
+vehicles_sub <-  #changing the specified fields to doubles
+  mutate(vehicles_sub_temp,
+         year = as.double(year),
+         fuelCost08 = as.double(fuelCost08),
+         highway08 = as.double(highway08),
+         city08 = as.double(city08),
+         feScore = as.double(feScore))
+```
+
+
 
 3. Conduct an exploratory analysis of each field in the dataset. This should include:
 
@@ -56,16 +80,80 @@ Indicate anything interesting that you notice.
 *Hint: When finding counts of fields, sometimes it is helpful to sort the field from highest to lowest values.*
 
 ```{r}
-
+glimpse(vehicles_sub)  
 ```
 
 
 ```{r}
+vehicles_sub %>%
+  group_by(make) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
 
+vehicles_sub %>%
+  group_by(model) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(year) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(cylinders) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(drive) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+
+vehicles_sub %>%
+  group_by(trany) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(evMotor) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
 ```
 
 ```{r}
+vehicles_sub %>%
+  group_by(fuelCost08) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
 
+
+vehicles_sub %>%
+  group_by(highway08) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(city08) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+vehicles_sub %>%
+  group_by(feScore) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
 ```
 
 4. Some of the fields need to be cleaned to ease analysis. 
@@ -73,20 +161,34 @@ Indicate anything interesting that you notice.
 - Create a new field in `vehicles_sub` called `evMotor_flag` that indicates whether or not the vehicle has an electric motor.
 
 ```{r}
-
+mutate(vehicles_sub,
+       evMotor_flag <-
+         filter(evMotors == "N/A" ))
 ```
 
 
 5. Create a graph that demonstrates how median city mileage has changed over time.
 
 ```{r}
-
+ggplot(vehicles_sub,
+       aes(x = year,
+           y = city08)) +
+  geom_point()
 ```
 
 6. Consider the top 5 car makes whose fuel economies have been evaluated most frequently. Create a graph that demonstrates how the city fuel mileage has changed over time for these makes.
 
 ```{r}
+vehicles_sub %>%  #find the top 5
+  group_by(make) %>%
+  summarize(count=n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
 
+ggplot(vehicles_sub) +
+  geom_point(aes(x = year,
+                 y = city08,
+                 color = Chevrolet, Ford, Dodge, GMC, Toyota)) 
 ```
 
 7. Create a question about the dataset that must be solved by using the `dplyr` verbs - `select`, `mutate`, `summarize`, `arrange`, etc.
@@ -94,6 +196,19 @@ Indicate anything interesting that you notice.
 -   Indicate what your question is. Consider a question that could be answered best by utilizing facets, multiple geometries, multiple aesthetics, or some combination of those.
 -   Create a graph that assists in answering the question.
 -   Write a short interpretation of the graph in order to answer your question.
+
+```{r}
+#I would like to see if there is a pattern between overall fuel efficiency and the year the car was made, controlling for a specific drive (in this case a 4) where fuel efficiency is represented by a ratio of highway fuel divided by city
+
+
+mutate(vehicles_sub,
+       efficiency = highway08/city08)
+vehicles_sub %>%
+  select(drive, efficiency, year) %>%
+  filter(drive == "4") %>%
+  arrange(desc(year))
+```
+
 
 8. Submit the following information about the project you would like to solve for your course project:
 
